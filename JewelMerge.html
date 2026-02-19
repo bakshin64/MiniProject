@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jewel Merge Game - Drop Logic Enhanced</title>
+    <title>Jewel Merge Game - Responsive Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap');
@@ -22,14 +22,16 @@
             touch-action: none;
         }
 
+        /* 메인 컨테이너: 화면 크기에 맞춰 전체를 축소함 */
         #app-wrapper {
             display: flex;
+            flex-direction: row;
             gap: 20px;
-            width: 95%;
-            max-width: 1000px;
-            height: 95vh;
             align-items: center;
             justify-content: center;
+            transform-origin: center;
+            transition: transform 0.2s ease-out;
+            padding: 20px;
         }
 
         #game-section {
@@ -39,10 +41,11 @@
             box-shadow: 0 0 40px rgba(0,0,0,0.6);
             overflow: hidden;
             border: 2px solid #2b344b;
+            flex-shrink: 0;
             display: none; 
         }
 
-        canvas { display: block; }
+        canvas { display: block; width: 100%; height: 100%; }
 
         #start-screen {
             position: absolute;
@@ -58,83 +61,54 @@
             border-radius: 20px;
         }
 
-        #start-screen h1 { font-size: 40px; color: #fcc419; margin-bottom: 40px; text-shadow: 0 0 20px rgba(252, 196, 25, 0.5); }
-        
+        #start-screen h1 { font-size: 40px; color: #fcc419; margin-bottom: 40px; }
         .mode-buttons { display: flex; flex-direction: column; gap: 15px; width: 280px; }
-        
         .mode-btn {
-            background: #2b344b;
-            color: white;
-            border: 2px solid #4d79ff;
-            padding: 15px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 700;
-            transition: all 0.3s;
+            background: #2b344b; color: white; border: 2px solid #4d79ff;
+            padding: 15px; border-radius: 15px; cursor: pointer;
+            font-size: 16px; font-weight: 700; transition: 0.3s;
         }
-
         .mode-btn:hover { background: #4d79ff; transform: translateY(-3px); }
-        .mode-btn span { display: block; font-size: 11px; font-weight: 400; opacity: 0.7; margin-top: 5px; }
+        .mode-btn span { display: block; font-size: 11px; opacity: 0.7; margin-top: 5px; }
 
         #info-section {
             width: 250px;
-            height: 90%;
+            height: auto;
             display: none; 
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
+            flex-shrink: 0;
         }
 
-        #ui-top-controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 150;
-        }
-
+        #ui-top-controls { position: absolute; top: 20px; right: 20px; z-index: 150; }
         .menu-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 12px;
-            transition: background 0.2s;
-            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px;
         }
 
         #score-container { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; }
-        #score-label { font-size: 12px; opacity: 0.6; }
         #score-value { font-size: 28px; font-weight: 700; color: #fcc419; }
 
         #next-box {
-            background: #1a1a2e;
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #1a1a2e; padding: 20px; border-radius: 20px;
+            text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         #next-preview-container {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
+            width: 80px; height: 80px; margin: 10px auto;
+            background: rgba(255,255,255,0.05); border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
         }
         #next-preview { border-radius: 50%; border: 2px solid white; }
 
         #gem-encyclopedia {
-            flex: 1; background: #1a1a2e; padding: 15px; border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1); overflow-y: auto;
-            display: flex; flex-direction: column; gap: 8px;
+            background: #1a1a2e; padding: 15px; border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column; gap: 6px;
+            max-height: 400px; overflow-y: auto;
         }
 
-        .gem-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 10px; }
-        .gem-circle { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #fff; flex-shrink: 0; }
+        .gem-item { display: flex; align-items: center; gap: 10px; padding: 5px 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .gem-circle { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #fff; flex-shrink: 0; }
         .gem-level-text { font-weight: 700; color: #fcc419; width: 30px; font-size: 11px; }
 
         #game-over {
@@ -147,35 +121,25 @@
         #guide-line { position: absolute; top: 0; width: 1px; height: 100%; background: rgba(255, 255, 255, 0.2); left: 50%; transform: translateX(-50%); pointer-events: none; z-index: 5; }
 
         #drop-warning {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 77, 77, 0.9);
-            padding: 10px 20px;
-            border-radius: 15px;
-            text-align: center;
-            display: none;
-            z-index: 150;
-            box-shadow: 0 0 20px rgba(255, 77, 77, 0.4);
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 77, 77, 0.9); padding: 10px 20px; border-radius: 15px;
+            text-align: center; display: none; z-index: 150;
         }
 
-        #warning-title { font-size: 14px; font-weight: 700; display: block; margin-bottom: 2px; }
-        #countdown-timer { font-size: 24px; font-weight: 900; color: white; display: block; }
-
-        @media (max-width: 768px) {
-            #app-wrapper { flex-direction: column; height: 98vh; }
-            #info-section { width: 100%; flex-direction: row; height: auto; display: none; }
-            #game-section { max-width: 100%; }
+        /* 반응형: 가로가 좁아지면 세로 배치로 변경하되 비율 유지 */
+        @media (max-width: 850px) {
+            #app-wrapper { flex-direction: column; padding: 10px; gap: 10px; }
+            #info-section { width: 320px; flex-direction: row; height: auto; }
+            #gem-encyclopedia { display: none; }
         }
     </style>
 </head>
 <body>
 
 <div id="app-wrapper">
-    <!-- 게임 시작 선택 화면 (설명 문구 유지) -->
+    <!-- 게임 시작 선택 화면 -->
     <div id="start-screen">
-        <h1>JEWEL MERGE</h1>
+        <h1 style="margin-top: 0;">JEWEL MERGE</h1>
         <div class="mode-buttons">
             <button class="mode-btn" onclick="startGame('normal')">
                 일반 모드
@@ -192,39 +156,41 @@
         </div>
     </div>
 
+    <!-- 플레이 영역 -->
     <div id="game-section">
         <div id="ui-top-controls">
             <button class="menu-btn" onclick="goToMenu()">MENU</button>
         </div>
         <div id="score-container">
-            <div id="score-label">SCORE</div>
+            <div style="font-size: 10px; opacity: 0.5;">SCORE</div>
             <div id="score-value">0</div>
         </div>
         <div id="guide-line"></div>
         <div id="limit-line" class="level-limit-line"></div>
         
         <div id="drop-warning">
-            <span id="warning-title">게임 오버 주의!</span>
-            <span id="countdown-timer">2.0s</span>
+            <span style="font-size: 12px; font-weight: 700;">게임 오버 주의!</span><br>
+            <span id="countdown-timer" style="font-size: 20px; font-weight: 900;">2.0s</span>
         </div>
 
         <div id="game-over">
-            <h2>GAME OVER</h2>
-            <p>최종 점수: <span id="final-score">0</span></p>
+            <h2 style="color: #ff4d4d;">GAME OVER</h2>
+            <p>최종 점수: <span id="final-score" style="font-weight: 700; color: #fcc419;">0</span></p>
             <button class="mode-btn" onclick="location.reload()" style="padding: 10px 20px; font-size: 14px;">다시 시작</button>
         </div>
     </div>
 
+    <!-- 정보부 -->
     <div id="info-section">
         <div id="next-box">
-            <div style="font-size: 12px; font-weight:700; color: #4d79ff; margin-bottom: 5px;" id="mode-display">NORMAL MODE</div>
-            <div id="next-label">NEXT</div>
+            <div id="mode-display" style="font-size: 11px; font-weight: 700; color: #4d79ff; margin-bottom: 5px;">NORMAL</div>
+            <div style="font-size: 10px; opacity: 0.5;">NEXT</div>
             <div id="next-preview-container">
                 <div id="next-preview"></div>
             </div>
         </div>
         <div id="gem-encyclopedia">
-            <div style="text-align: center; font-size: 13px; color: #aaa; margin-bottom: 5px; font-weight: 700;">EVOLUTION CHART</div>
+            <div style="text-align: center; font-size: 12px; color: #aaa; font-weight: 700; margin-bottom: 5px;">EVOLUTION</div>
         </div>
     </div>
 </div>
@@ -232,49 +198,21 @@
 <script>
     const VIOLATION_LIMIT = 2000; 
 
-    // --- 설정값 유지 ---
     const Mode1_config = {
-        name: "Normal",
-        gameWidth: 320,      
-        gameHeight: 520,     
-        limitLineY: 100,     
-        restitution: 0.3,    
-        friction: 0.001,      
-        gravity: 1.2,        
-        dropDelay: 350,      
-        explosion: false,
-        split: false
+        name: "Normal", gameWidth: 320, gameHeight: 520, limitLineY: 100, 
+        restitution: 0.3, friction: 0.001, gravity: 1.2, dropDelay: 350, explosion: false, split: false
     };
 
     const Mode2_config = {
-        name: "탱탱볼",
-        gameWidth: 320,      
-        gameHeight: 620,
-        limitLineY: 100,
-        restitution: 1.1,    
-        friction: 0.001,      
-        gravity: 1.2,        
-        dropDelay: 400,
-        explosion: true,     
-        explosionConfig: {
-            range: 800,      
-            strength: 1000    
-        },
-        split: false
+        name: "Bouncy", gameWidth: 320, gameHeight: 620, limitLineY: 100, 
+        restitution: 1.1, friction: 0.001, gravity: 1.2, dropDelay: 400, 
+        explosion: true, explosionConfig: { range: 800, strength: 1000 }, split: false
     };
 
     const Mode3_config = {
-        name: "분열",
-        gameWidth: 400,
-        gameHeight: 520,
-        limitLineY: 100,
-        restitution: 0.35,   
-        friction: 0.001,      
-        gravity: 1.2,        
-        dropDelay: 350,      
-        explosion: false,
-        split: true,          
-        splitProbability: 0.8 
+        name: "Split", gameWidth: 400, gameHeight: 520, limitLineY: 100, 
+        restitution: 0.35, friction: 0.001, gravity: 1.2, dropDelay: 350, 
+        explosion: false, split: true, splitProbability: 0.8 
     };
 
     const JEWEL_LEVELS = [
@@ -295,32 +233,17 @@
     const { Engine, Render, Runner, Bodies, Composite, Events, Body, Vector } = Matter;
 
     let engine, render, runner, activeConfig;
-    let score = 0;
-    let isGameOver = false;
-    let isLineViolated = false; 
-    let violationStartTime = null; 
-    let currentJewel = null;
-    let nextLevel = 0;
-    let canDrop = true;
-    let hasSplitInCurrentTurn = false; 
-
-    // (2) 다음 투하 가능 여부를 위한 추가 플래그
-    let isTimerReady = true;
-    let isCollisionReady = true;
+    let score = 0, isGameOver = false, isLineViolated = false, violationStartTime = null; 
+    let currentJewel = null, nextLevel = 0, canDrop = true, hasSplitInCurrentTurn = false; 
+    let isTimerReady = true, isCollisionReady = true;
 
     function startGame(mode) {
-        score = 0;
-        isGameOver = false;
-        isLineViolated = false;
-        violationStartTime = null;
-        canDrop = true;
-        isTimerReady = true;
-        isCollisionReady = true;
-        hasSplitInCurrentTurn = false;
+        score = 0; isGameOver = false; isLineViolated = false; violationStartTime = null;
+        canDrop = true; isTimerReady = true; isCollisionReady = true; hasSplitInCurrentTurn = false;
+        
         document.getElementById('score-value').innerText = "0";
         document.getElementById('game-over').style.display = 'none';
         document.getElementById('drop-warning').style.display = 'none';
-
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('game-section').style.display = 'block';
         document.getElementById('info-section').style.display = 'flex';
@@ -329,23 +252,39 @@
         else if (mode === 'explosion') activeConfig = Mode2_config;
         else if (mode === 'split') activeConfig = Mode3_config;
 
-        document.getElementById('mode-display').innerText = activeConfig.name.toUpperCase() + " MODE";
+        document.getElementById('mode-display').innerText = activeConfig.name.toUpperCase();
         
         initGame();
+        handleResize(); // 초기 리사이즈 적용
     }
 
     function goToMenu() {
         if (runner) Runner.stop(runner);
-        if (render) {
-            Render.stop(render);
-            render.canvas.remove();
-        }
+        if (render) { Render.stop(render); render.canvas.remove(); }
         if (engine) Engine.clear(engine);
-        
         document.getElementById('start-screen').style.display = 'flex';
         document.getElementById('game-section').style.display = 'none';
         document.getElementById('info-section').style.display = 'none';
+        document.getElementById('app-wrapper').style.transform = 'none';
     }
+
+    // 반응형 스케일링 핵심 함수
+    function handleResize() {
+        const wrapper = document.getElementById('app-wrapper');
+        if (window.getComputedStyle(document.getElementById('game-section')).display === 'none') return;
+
+        const infoSectionWidth = (window.innerWidth > 850) ? 270 : 0; // 데스크탑에서 정보부 너비 고려
+        const targetWidth = activeConfig.gameWidth + infoSectionWidth + 60;
+        const targetHeight = activeConfig.gameHeight + 80;
+
+        const scaleW = window.innerWidth / targetWidth;
+        const scaleH = window.innerHeight / targetHeight;
+        const finalScale = Math.min(1, scaleW, scaleH);
+
+        wrapper.style.transform = `scale(${finalScale})`;
+    }
+
+    window.addEventListener('resize', handleResize);
 
     function initGame() {
         const gameSection = document.getElementById('game-section');
@@ -354,117 +293,78 @@
         document.getElementById('limit-line').style.top = activeConfig.limitLineY + 'px';
 
         engine = Engine.create({ gravity: { y: activeConfig.gravity } });
-
-        const canvas = document.createElement('canvas');
-        gameSection.appendChild(canvas);
-
         render = Render.create({
-            canvas: canvas,
+            canvas: document.createElement('canvas'),
             engine: engine,
-            options: {
-                width: activeConfig.gameWidth,
-                height: activeConfig.gameHeight,
-                wireframes: false,
-                background: 'transparent'
-            }
+            options: { width: activeConfig.gameWidth, height: activeConfig.gameHeight, wireframes: false, background: 'transparent' }
         });
+        gameSection.appendChild(render.canvas);
 
-        const wallOptions = { 
-            isStatic: true, 
-            render: { fillStyle: '#2b344b' }, 
-            restitution: activeConfig.restitution, 
-            friction: activeConfig.friction 
-        };
-        
-        const ground = Bodies.rectangle(activeConfig.gameWidth / 2, activeConfig.gameHeight + 25, activeConfig.gameWidth, 50, wallOptions);
-        const leftWall = Bodies.rectangle(-25, activeConfig.gameHeight / 2, 50, activeConfig.gameHeight, wallOptions);
-        const rightWall = Bodies.rectangle(activeConfig.gameWidth + 25, activeConfig.gameHeight / 2, 50, activeConfig.gameHeight, wallOptions);
-        
-        Composite.add(engine.world, [ground, leftWall, rightWall]);
+        const wallOptions = { isStatic: true, render: { fillStyle: '#2b344b' }, restitution: activeConfig.restitution, friction: activeConfig.friction };
+        _addWalls(wallOptions);
 
         Render.run(render);
-        runner = Runner.create();
-        Runner.run(runner, engine);
+        runner = Runner.run(engine);
 
         setupControls();
         setupCollision();
         createEncyclopedia();
         spawnNextJewel();
-        
         Events.on(engine, 'afterUpdate', checkGameOver);
     }
 
-    function createEncyclopedia() {
-        const encyclopedia = document.getElementById('gem-encyclopedia');
-        encyclopedia.innerHTML = '<div style="text-align: center; font-size: 13px; color: #aaa; margin-bottom: 5px; font-weight: 700;">EVOLUTION CHART</div>';
-        JEWEL_LEVELS.forEach((jewel, index) => {
-            const item = document.createElement('div');
-            item.className = 'gem-item';
-            const circle = document.createElement('div');
-            circle.className = 'gem-circle';
-            circle.style.background = jewel.color;
-            const text = document.createElement('span');
-            text.className = 'gem-level-text';
-            text.innerText = `Lv.${index + 1}`;
-            const name = document.createElement('span');
-            name.style.fontSize = '12px';
-            name.innerText = jewel.name;
-            item.appendChild(circle);
-            item.appendChild(text);
-            item.appendChild(name);
-            encyclopedia.appendChild(item);
-        });
+    function _addWalls(opts) {
+        const ground = Bodies.rectangle(activeConfig.gameWidth / 2, activeConfig.gameHeight + 25, activeConfig.gameWidth, 50, opts);
+        const leftWall = Bodies.rectangle(-25, activeConfig.gameHeight / 2, 50, activeConfig.gameHeight, opts);
+        const rightWall = Bodies.rectangle(activeConfig.gameWidth + 25, activeConfig.gameHeight / 2, 50, activeConfig.gameHeight, opts);
+        Composite.add(engine.world, [ground, leftWall, rightWall]);
     }
 
     function setupControls() {
-        const gameSection = document.getElementById('game-section');
-        const guideLine = document.getElementById('guide-line');
+        const gs = document.getElementById('game-section');
+        const gl = document.getElementById('guide-line');
+
+        const getCorrectX = (clientX) => {
+            const rect = gs.getBoundingClientRect();
+            // CSS Scale이 적용된 상태이므로, 실제 화면상의 픽셀 위치를 내부 좌표계로 변환해야 함
+            const scale = rect.width / activeConfig.gameWidth;
+            return (clientX - rect.left) / scale;
+        };
 
         const moveHandler = (e) => {
             if (isGameOver || !canDrop || !currentJewel) return;
-            const rect = gameSection.getBoundingClientRect();
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const x = clientX - rect.left;
-            const minX = currentJewel.circleRadius;
-            const maxX = activeConfig.gameWidth - currentJewel.circleRadius;
-            const clampedX = Math.max(minX, Math.min(maxX, x));
+            const x = getCorrectX(clientX);
+            const r = currentJewel.circleRadius;
+            const clampedX = Math.max(r, Math.min(activeConfig.gameWidth - r, x));
             Body.setPosition(currentJewel, { x: clampedX, y: 50 });
-            guideLine.style.left = clampedX + 'px';
+            gl.style.left = clampedX + 'px';
         };
 
         const dropHandler = (e) => {
-            const rect = gameSection.getBoundingClientRect();
+            const rect = gs.getBoundingClientRect();
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            if (clientY - rect.top < 60) return;
+            // 상단 메뉴 영역 터치 방지
+            const scale = rect.height / activeConfig.gameHeight;
+            if ((clientY - rect.top) / scale < 60) return;
 
-            // (2) 충돌 전 투하 방지: canDrop 및 관련 플래그 체크
             if (isGameOver || isLineViolated || !canDrop || !currentJewel) return;
 
             hasSplitInCurrentTurn = false;
-            canDrop = false;
-            isTimerReady = false;
-            isCollisionReady = false;
-
-            currentJewel.isSensor = false; 
-            currentJewel.isFirstDrop = true; 
+            canDrop = false; isTimerReady = false; isCollisionReady = false;
+            currentJewel.isSensor = false; currentJewel.isFirstDrop = true; 
             Body.setStatic(currentJewel, false);
-            currentJewel = null;
-            guideLine.style.display = 'none';
+            currentJewel = null; gl.style.display = 'none';
 
-            // 타이머 준비
-            setTimeout(() => {
-                isTimerReady = true;
-                trySpawnNext();
-            }, activeConfig.dropDelay);
+            setTimeout(() => { isTimerReady = true; trySpawnNext(); }, activeConfig.dropDelay);
         };
 
-        gameSection.addEventListener('mousemove', moveHandler);
-        gameSection.addEventListener('touchmove', (e) => { e.preventDefault(); moveHandler(e); }, { passive: false });
-        gameSection.addEventListener('mousedown', dropHandler);
-        gameSection.addEventListener('touchstart', dropHandler);
+        gs.addEventListener('mousemove', moveHandler);
+        gs.addEventListener('touchmove', (e) => { e.preventDefault(); moveHandler(e); }, { passive: false });
+        gs.addEventListener('mousedown', dropHandler);
+        gs.addEventListener('touchstart', dropHandler);
     }
 
-    // (2) 타이머와 충돌이 모두 완료되었을 때만 새 보석 생성
     function trySpawnNext() {
         if (isTimerReady && isCollisionReady && !isGameOver && engine.world) {
             spawnNextJewel();
@@ -476,181 +376,127 @@
     function spawnNextJewel() {
         const level = nextLevel;
         const config = JEWEL_LEVELS[level];
-        const jewel = Bodies.circle(activeConfig.gameWidth / 2, 50, config.radius, {
-            isStatic: true, 
-            isSensor: true, 
-            restitution: activeConfig.restitution, 
-            friction: activeConfig.friction,
-            label: 'jewel-' + level, 
-            level: level,
-            render: { fillStyle: config.color, strokeStyle: '#ffffff', lineWidth: (config.color === '#000000') ? 4 : 2 }
+        currentJewel = Bodies.circle(activeConfig.gameWidth / 2, 50, config.radius, {
+            isStatic: true, isSensor: true, restitution: activeConfig.restitution, friction: activeConfig.friction,
+            label: 'j-' + level, level: level,
+            render: { fillStyle: config.color, strokeStyle: '#ffffff', lineWidth: (level === 8 ? 4 : 2) }
         });
-        currentJewel = jewel;
-        Composite.add(engine.world, jewel);
+        Composite.add(engine.world, currentJewel);
         nextLevel = Math.floor(Math.random() * 4);
         updateNextPreview();
     }
 
     function updateNextPreview() {
-        const preview = document.getElementById('next-preview');
-        const config = JEWEL_LEVELS[nextLevel];
-        preview.style.background = config.color;
-        const previewSize = 20 + (nextLevel * 5);
-        preview.style.width = previewSize + 'px';
-        preview.style.height = previewSize + 'px';
+        const pre = document.getElementById('next-preview');
+        const cfg = JEWEL_LEVELS[nextLevel];
+        pre.style.background = cfg.color;
+        const size = 20 + (nextLevel * 5);
+        pre.style.width = size + 'px'; pre.style.height = size + 'px';
     }
 
     function setupCollision() {
         Events.on(engine, 'collisionStart', (event) => {
             event.pairs.forEach((pair) => {
-                const bodyA = pair.bodyA;
-                const bodyB = pair.bodyB;
+                const a = pair.bodyA; const b = pair.bodyB;
+                if (a.isSensor || b.isSensor) return;
 
-                if (bodyA.isSensor || bodyB.isSensor) return;
+                if (a.isFirstDrop) { a.isFirstDrop = false; isCollisionReady = true; trySpawnNext(); }
+                if (b.isFirstDrop) { b.isFirstDrop = false; isCollisionReady = true; trySpawnNext(); }
 
-                // (2) 마지막으로 투하한 보석의 첫 충돌 감지
-                if (bodyA.isFirstDrop) {
-                    bodyA.isFirstDrop = false;
-                    isCollisionReady = true;
-                    trySpawnNext();
-                }
-                if (bodyB.isFirstDrop) {
-                    bodyB.isFirstDrop = false;
-                    isCollisionReady = true;
-                    trySpawnNext();
-                }
+                if (a.label && a.label === b.label) {
+                    const lv = a.level; if (lv >= JEWEL_LEVELS.length - 1) return;
+                    const nx = (a.position.x + b.position.x) / 2, ny = (a.position.y + b.position.y) / 2;
+                    const v = { x: (a.velocity.x + b.velocity.x) / 2, y: (a.velocity.y + b.velocity.y) / 2 };
+                    const av = (a.angularVelocity + b.angularVelocity) / 2;
 
-                if (bodyA.label && bodyB.label && bodyA.label.startsWith('jewel-') && bodyA.label === bodyB.label) {
-                    const level = bodyA.level;
-                    if (level >= JEWEL_LEVELS.length - 1) return;
-
-                    const newX = (bodyA.position.x + bodyB.position.x) / 2;
-                    const newY = (bodyA.position.y + bodyB.position.y) / 2;
-
-                    const inheritedVelocity = { x: (bodyA.velocity.x + bodyB.velocity.x) / 2, y: (bodyA.velocity.y + bodyB.velocity.y) / 2 };
-                    const inheritedAngularVelocity = (bodyA.angularVelocity + bodyB.angularVelocity) / 2;
-
-                    Composite.remove(engine.world, [bodyA, bodyB]);
-                    const newJewel = createMergedJewel(newX, newY, level + 1);
+                    Composite.remove(engine.world, [a, b]);
+                    const nj = createMergedJewel(nx, ny, lv + 1);
+                    Body.setVelocity(nj, v); Body.setAngularVelocity(nj, av);
                     
-                    Body.setVelocity(newJewel, inheritedVelocity);
-                    Body.setAngularVelocity(newJewel, inheritedAngularVelocity);
+                    if (activeConfig.explosion) _applyExplosion(nx, ny);
+                    if (activeConfig.split && !hasSplitInCurrentTurn && Math.random() < activeConfig.splitProbability) _applySplit(nx, ny, lv);
                     
-                    if (activeConfig.explosion) {
-                        applyExplosion(newX, newY);
-                    }
-
-                    if (activeConfig.split && !hasSplitInCurrentTurn && Math.random() < activeConfig.splitProbability) {
-                        hasSplitInCurrentTurn = true; 
-                        const maxSplitLevel = Math.min(2, level);
-                        const splitLevel = Math.floor(Math.random() * (maxSplitLevel + 1));
-                        
-                        const configSplit = JEWEL_LEVELS[splitLevel];
-                        const configMerged = JEWEL_LEVELS[level + 1];
-                        
-                        const angle = Math.random() * Math.PI * 2;
-                        const distance = configMerged.radius + configSplit.radius + 5; 
-                        
-                        const splitX = newX + Math.cos(angle) * distance;
-                        const splitY = newY + Math.sin(angle) * distance;
-                        
-                        const finalX = Math.max(configSplit.radius, Math.min(activeConfig.gameWidth - configSplit.radius, splitX));
-                        const finalY = Math.min(activeConfig.gameHeight - configSplit.radius, splitY);
-
-                        const splitJewel = createMergedJewel(finalX, finalY, splitLevel);
-                        Body.setVelocity(splitJewel, { 
-                            x: Math.cos(angle) * 3, 
-                            y: Math.sin(angle) * 3 - 2 
-                        });
-                    }
-                    
-                    updateScore(JEWEL_LEVELS[level + 1].score);
+                    updateScore(JEWEL_LEVELS[lv + 1].score);
                 }
             });
         });
     }
 
-    function applyExplosion(x, y) {
+    function _applyExplosion(x, y) {
         const bodies = Composite.allBodies(engine.world);
         const { range, strength } = activeConfig.explosionConfig;
-
-        bodies.forEach(body => {
-            if (body.isStatic || body.isSensor) return;
-            
-            const delta = Vector.sub(body.position, {x, y});
-            const centerDistance = Vector.magnitude(delta);
-            const surfaceDistance = centerDistance - (body.circleRadius || 0);
-            
-            if (surfaceDistance < range && centerDistance > 0) {
-                const intensity = (1 - Math.max(0, surfaceDistance) / range) * strength;
-                const forceVector = Vector.mult(Vector.normalise(delta), intensity);
-                Body.applyForce(body, body.position, Vector.mult(forceVector, 0.05 * body.mass));
+        bodies.forEach(b => {
+            if (b.isStatic || b.isSensor) return;
+            const d = Vector.sub(b.position, {x, y}), dist = Vector.magnitude(d), sd = dist - b.circleRadius;
+            if (sd < range && dist > 0) {
+                const force = Vector.mult(Vector.normalise(d), (1 - Math.max(0, sd) / range) * strength * 0.05 * b.mass);
+                Body.applyForce(b, b.position, force);
             }
         });
     }
 
-    function createMergedJewel(x, y, level) {
-        const config = JEWEL_LEVELS[level];
-        const newJewel = Bodies.circle(x, y, config.radius, {
-            restitution: activeConfig.restitution, friction: activeConfig.friction, label: 'jewel-' + level, level: level,
-            render: { fillStyle: config.color, strokeStyle: '#ffffff', lineWidth: (config.color === '#000000') ? 4 : 2 }
-        });
-        Composite.add(engine.world, newJewel);
-        return newJewel;
+    function _applySplit(nx, ny, lv) {
+        hasSplitInCurrentTurn = true; 
+        const slv = Math.floor(Math.random() * (Math.min(2, lv) + 1));
+        const sj = JEWEL_LEVELS[slv], mj = JEWEL_LEVELS[lv + 1];
+        const ang = Math.random() * Math.PI * 2, dist = mj.radius + sj.radius + 5;
+        const sx = nx + Math.cos(ang) * dist, sy = ny + Math.sin(ang) * dist;
+        const fx = Math.max(sj.radius, Math.min(activeConfig.gameWidth - sj.radius, sx));
+        const fs = createMergedJewel(fx, sy, slv);
+        Body.setVelocity(fs, { x: Math.cos(ang) * 3, y: Math.sin(ang) * 3 - 2 });
     }
 
-    function updateScore(points) {
-        score += points;
-        document.getElementById('score-value').innerText = score.toLocaleString();
+    function createMergedJewel(x, y, level) {
+        const cfg = JEWEL_LEVELS[level];
+        const nj = Bodies.circle(x, y, cfg.radius, {
+            restitution: activeConfig.restitution, friction: activeConfig.friction, label: 'j-' + level, level: level,
+            render: { fillStyle: cfg.color, strokeStyle: '#ffffff', lineWidth: (level === 8 ? 4 : 2) }
+        });
+        Composite.add(engine.world, nj);
+        return nj;
+    }
+
+    function updateScore(p) { score += p; document.getElementById('score-value').innerText = score.toLocaleString(); }
+
+    function createEncyclopedia() {
+        const enc = document.getElementById('gem-encyclopedia');
+        enc.innerHTML = '<div style="text-align: center; font-size: 12px; color: #aaa; font-weight: 700; margin-bottom: 5px;">EVOLUTION</div>';
+        JEWEL_LEVELS.forEach((j, i) => {
+            const item = document.createElement('div'); item.className = 'gem-item';
+            item.innerHTML = `<div class="gem-circle" style="background:${j.color}"></div><span class="gem-level-text">Lv.${i+1}</span><span style="font-size:11px;opacity:0.8">${j.name}</span>`;
+            enc.appendChild(item);
+        });
     }
 
     function checkGameOver() {
         if (isGameOver) return;
-
         const bodies = Composite.allBodies(engine.world);
-        const limitLineY = activeConfig.limitLineY;
-
-        let lineViolatedThisFrame = false;
-
-        bodies.forEach(body => {
-            if (body.isStatic || body.isSensor || body.isFirstDrop) return;
-            if (body.bounds.min.y < limitLineY) {
-                lineViolatedThisFrame = true;
-            }
+        let violated = false;
+        bodies.forEach(b => {
+            if (b.isStatic || b.isSensor || b.isFirstDrop) return;
+            if (b.bounds.min.y < activeConfig.limitLineY) violated = true;
         });
 
-        isLineViolated = lineViolatedThisFrame;
-        const warningUI = document.getElementById('drop-warning');
-        const countdownTimer = document.getElementById('countdown-timer');
-        const guideLine = document.getElementById('guide-line');
+        isLineViolated = violated;
+        const warnUI = document.getElementById('drop-warning');
+        const timerUI = document.getElementById('countdown-timer');
 
         if (isLineViolated) {
-            warningUI.style.display = 'block';
-            if (currentJewel) guideLine.style.display = 'none';
-
-            if (!violationStartTime) {
-                violationStartTime = Date.now();
-            }
-            
+            warnUI.style.display = 'block';
+            if (currentJewel) document.getElementById('guide-line').style.display = 'none';
+            if (!violationStartTime) violationStartTime = Date.now();
             const elapsed = Date.now() - violationStartTime;
             const remaining = Math.max(0, (VIOLATION_LIMIT - elapsed) / 1000);
-            countdownTimer.innerText = remaining.toFixed(1) + "s";
-
-            if (elapsed > VIOLATION_LIMIT) {
-                endGame();
-            }
+            timerUI.innerText = remaining.toFixed(1) + "s";
+            if (elapsed > VIOLATION_LIMIT) endGame();
         } else {
-            warningUI.style.display = 'none';
-            violationStartTime = null; 
-            if (currentJewel && canDrop) {
-                guideLine.style.display = 'block';
-            }
+            warnUI.style.display = 'none'; violationStartTime = null; 
+            if (currentJewel && canDrop) document.getElementById('guide-line').style.display = 'block';
         }
     }
 
     function endGame() {
-        if (isGameOver) return;
-        isGameOver = true;
+        if (isGameOver) return; isGameOver = true;
         document.getElementById('game-over').style.display = 'block';
         document.getElementById('final-score').innerText = score.toLocaleString();
         document.getElementById('drop-warning').style.display = 'none';
