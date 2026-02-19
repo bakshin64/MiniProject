@@ -117,6 +117,14 @@
             text-align: center; display: none; z-index: 100; width: 80%; border: 2px solid #ff4d4d;
         }
 
+        /* 일시 정지 메뉴 스타일 */
+        #pause-menu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 180;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 20px;
+        }
+
         .level-limit-line { position: absolute; width: 100%; height: 2px; background: rgba(255, 50, 50, 0.4); border-top: 1px dashed rgba(255, 50, 50, 0.6); z-index: 5; pointer-events: none; }
         #guide-line { position: absolute; top: 0; width: 1px; height: 100%; background: rgba(255, 255, 255, 0.2); left: 50%; transform: translateX(-50%); pointer-events: none; z-index: 5; }
 
@@ -126,7 +134,6 @@
             text-align: center; display: none; z-index: 150;
         }
 
-        /* 반응형: 가로가 좁아지면 세로 배치로 변경하되 비율 유지 */
         @media (max-width: 850px) {
             #app-wrapper { flex-direction: column; padding: 10px; gap: 10px; }
             #info-section { width: 320px; flex-direction: row; height: auto; }
@@ -159,8 +166,18 @@
     <!-- 플레이 영역 -->
     <div id="game-section">
         <div id="ui-top-controls">
-            <button class="menu-btn" onclick="goToMenu()">MENU</button>
+            <button class="menu-btn" onclick="togglePause(true)">MENU</button>
         </div>
+        
+        <!-- 일시 정지 메뉴 -->
+        <div id="pause-menu">
+            <h2 style="margin-bottom: 30px; font-size: 32px; color: #fcc419;">PAUSED</h2>
+            <div class="mode-buttons">
+                <button class="mode-btn" onclick="togglePause(false)">게임 재개</button>
+                <button class="mode-btn" onclick="quitToMain()" style="border-color: #666; background: #1a1a2e;">메인 메뉴로 돌아가기</button>
+            </div>
+        </div>
+
         <div id="score-container">
             <div style="font-size: 10px; opacity: 0.5;">SCORE</div>
             <div id="score-value">0</div>
@@ -233,16 +250,17 @@
     const { Engine, Render, Runner, Bodies, Composite, Events, Body, Vector } = Matter;
 
     let engine, render, runner, activeConfig;
-    let score = 0, isGameOver = false, isLineViolated = false, violationStartTime = null; 
+    let score = 0, isGameOver = false, isPaused = false, isLineViolated = false, violationStartTime = null; 
     let currentJewel = null, nextLevel = 0, canDrop = true, hasSplitInCurrentTurn = false; 
     let isTimerReady = true, isCollisionReady = true;
 
     function startGame(mode) {
-        score = 0; isGameOver = false; isLineViolated = false; violationStartTime = null;
+        score = 0; isGameOver = false; isPaused = false; isLineViolated = false; violationStartTime = null;
         canDrop = true; isTimerReady = true; isCollisionReady = true; hasSplitInCurrentTurn = false;
         
         document.getElementById('score-value').innerText = "0";
         document.getElementById('game-over').style.display = 'none';
+        document.getElementById('pause-menu').style.display = 'none';
         document.getElementById('drop-warning').style.display = 'none';
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('game-section').style.display = 'block';
@@ -255,10 +273,26 @@
         document.getElementById('mode-display').innerText = activeConfig.name.toUpperCase();
         
         initGame();
-        handleResize(); // 초기 리사이즈 적용
+        handleResize(); 
     }
 
-    function goToMenu() {
+    // 일시 정지 토글 함수
+    function togglePause(paused) {
+        if (isGameOver) return;
+        isPaused = paused;
+        const menu = document.getElementById('pause-menu');
+        
+        if (isPaused) {
+            Runner.stop(runner);
+            menu.style.display = 'flex';
+        } else {
+            Runner.run(runner, engine);
+            menu.style.display = 'none';
+        }
+    }
+
+    // 메인 메뉴로 나가기 (기존 goToMenu 수정)
+    function quitToMain() {
         if (runner) Runner.stop(runner);
         if (render) { Render.stop(render); render.canvas.remove(); }
         if (engine) Engine.clear(engine);
@@ -268,12 +302,12 @@
         document.getElementById('app-wrapper').style.transform = 'none';
     }
 
-    // 반응형 스케일링 핵심 함수
     function handleResize() {
         const wrapper = document.getElementById('app-wrapper');
-        if (window.getComputedStyle(document.getElementById('game-section')).display === 'none') return;
+        const gameSection = document.getElementById('game-section');
+        if (window.getComputedStyle(gameSection).display === 'none') return;
 
-        const infoSectionWidth = (window.innerWidth > 850) ? 270 : 0; // 데스크탑에서 정보부 너비 고려
+        const infoSectionWidth = (window.innerWidth > 850) ? 270 : 0; 
         const targetWidth = activeConfig.gameWidth + infoSectionWidth + 60;
         const targetHeight = activeConfig.gameHeight + 80;
 
@@ -326,13 +360,12 @@
 
         const getCorrectX = (clientX) => {
             const rect = gs.getBoundingClientRect();
-            // CSS Scale이 적용된 상태이므로, 실제 화면상의 픽셀 위치를 내부 좌표계로 변환해야 함
             const scale = rect.width / activeConfig.gameWidth;
             return (clientX - rect.left) / scale;
         };
 
         const moveHandler = (e) => {
-            if (isGameOver || !canDrop || !currentJewel) return;
+            if (isGameOver || isPaused || !canDrop || !currentJewel) return;
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const x = getCorrectX(clientX);
             const r = currentJewel.circleRadius;
@@ -342,13 +375,15 @@
         };
 
         const dropHandler = (e) => {
+            if (isGameOver || isPaused || isLineViolated || !canDrop || !currentJewel) return;
+            
             const rect = gs.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            // 상단 메뉴 영역 터치 방지
+            
             const scale = rect.height / activeConfig.gameHeight;
+            // 상단 메뉴 버튼 영역 클릭 시 투하 무시
             if ((clientY - rect.top) / scale < 60) return;
-
-            if (isGameOver || isLineViolated || !canDrop || !currentJewel) return;
 
             hasSplitInCurrentTurn = false;
             canDrop = false; isTimerReady = false; isCollisionReady = false;
@@ -366,7 +401,7 @@
     }
 
     function trySpawnNext() {
-        if (isTimerReady && isCollisionReady && !isGameOver && engine.world) {
+        if (isTimerReady && isCollisionReady && !isGameOver && !isPaused && engine.world) {
             spawnNextJewel();
             if (!isLineViolated) document.getElementById('guide-line').style.display = 'block';
             canDrop = true;
@@ -469,7 +504,7 @@
     }
 
     function checkGameOver() {
-        if (isGameOver) return;
+        if (isGameOver || isPaused) return;
         const bodies = Composite.allBodies(engine.world);
         let violated = false;
         bodies.forEach(b => {
