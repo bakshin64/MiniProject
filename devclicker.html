@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Dev Tycoon</title>
+<style>
+:root{--p:#00ff9d;--s:#00d5ff;--a:#ff0055;--bg:#0d1117;--pn:#161b22;--bd:#30363d;--tx:#c9d1d9;--w:#f0f6fc}
+body{margin:0;padding:0;background-color:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden;display:flex;flex-direction:column;height:100vh;user-select:none;-webkit-user-select:none}
+header{padding:10px 20px;background:var(--pn);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;z-index:20;height:50px}
+h1{margin:0;font-size:1.1rem;color:var(--p);font-weight:800;letter-spacing:1px}
+.mn-b{font-size:1.5rem;cursor:pointer;color:var(--w);padding:5px;transition:color .2s}
+.mn-b:hover{color:var(--s)}
+.g-c{display:flex;flex:1;overflow:hidden;position:relative}
+.w-s{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;background:radial-gradient(circle at center,#1f2428 0%,var(--bg) 80%);min-width:320px;position:relative}
+.r-d{text-align:center;margin-bottom:30px;display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+.m-a{font-size:3rem;font-weight:800;color:var(--w);text-shadow:0 0 20px rgba(0,255,157,.2);font-family:'Courier New',monospace;line-height:1}
+.m-l{font-size:.8rem;color:var(--p);text-transform:uppercase;letter-spacing:2px}
+.s-g{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden;width:80%;max-width:350px;margin-top:15px}
+.s-i{background:var(--pn);padding:10px;display:flex;flex-direction:column;align-items:center}
+.s-v{font-family:'Courier New',monospace;font-size:1rem;color:var(--w);font-weight:bold}
+.s-n{font-size:.65rem;color:#8b949e;text-transform:uppercase;margin-top:2px}
+.m-b{width:240px;height:240px;border-radius:50%;background:linear-gradient(145deg,#2a313a,#161b22);box-shadow:0 15px 35px rgba(0,0,0,.6),inset 0 0 0 3px var(--bd);display:flex;justify-content:center;align-items:center;cursor:pointer;position:relative;overflow:hidden;transition:transform .1s;animation:p-b 2s infinite}
+.m-b:active{transform:scale(.96);box-shadow:0 5px 15px rgba(0,0,0,.5)}
+.b-c{display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.b-i{font-size:3.5rem;margin-bottom:5px;filter:drop-shadow(0 0 10px var(--s))}
+.b-t{font-size:1.2rem;font-weight:900;color:var(--s);text-transform:uppercase;letter-spacing:2px;animation:t-g 1.5s infinite alternate}
+@keyframes p-b{0%{box-shadow:0 0 0 0 rgba(0,213,255,.4)}70%{box-shadow:0 0 0 15px rgba(0,213,255,0)}100%{box-shadow:0 0 0 0 rgba(0,213,255,0)}}
+@keyframes t-g{from{text-shadow:0 0 5px var(--s);opacity:.8}to{text-shadow:0 0 20px var(--s),0 0 10px var(--w);opacity:1}}
+.s-s{width:600px;background-color:var(--pn);border-left:1px solid var(--bd);display:flex;flex-direction:column;z-index:10}
+.s-cc{display:flex;flex:1;overflow:hidden}
+.s-c{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--bd)}
+.s-c:last-child{border-right:none}
+.c-h{padding:12px;background:#0d1117;border-bottom:1px solid var(--bd);text-align:center}
+.c-t{font-size:.85rem;font-weight:800;color:var(--w);display:block;margin-bottom:2px}
+.c-s{font-size:.65rem;color:#8b949e}
+.c-l{flex:1;overflow-y:auto;padding:8px}
+.c-l::-webkit-scrollbar{width:6px}
+.c-l::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+.i-c{background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer;display:flex;flex-direction:column;transition:background .2s}
+.i-c:hover{background:rgba(255,255,255,.05);border-color:#8b949e}
+.i-c.d{opacity:.4;cursor:not-allowed;filter:grayscale(1)}
+.c-tp{display:flex;justify-content:space-between;margin-bottom:5px}
+.i-n{font-weight:bold;color:var(--w);font-size:.8rem}
+.i-cs{color:var(--s);font-weight:bold;font-family:'Courier New',monospace;font-size:.85rem;text-align:right}
+.s-c:last-child .i-cs{color:var(--a)}
+.i-cn{font-size:1rem;color:#484f58;font-weight:800;text-align:right}
+.i-cn.a{color:var(--w)}
+.i-d{font-size:.65rem;color:#8b949e}
+.f-t{position:absolute;color:var(--w);font-weight:bold;font-size:1.2rem;pointer-events:none;animation:fU .6s ease-out forwards;text-shadow:0 0 5px var(--s);z-index:100}
+@keyframes fU{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-40px) scale(1.2);opacity:0}}
+.m-o{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.m-o.s{opacity:1;pointer-events:auto}
+.m-b{background:var(--pn);border:1px solid var(--bd);padding:25px;border-radius:12px;width:300px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.8)}
+.m-t{color:var(--w);font-size:1.2rem;font-weight:bold;margin-bottom:20px;border-bottom:1px solid var(--bd);padding-bottom:10px}
+.m-i{color:#8b949e;font-size:.9rem;margin-bottom:25px;line-height:1.5}
+.r-b{background:rgba(255,0,85,.1);color:var(--a);border:1px solid var(--a);padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:bold;width:100%;transition:all .2s}
+.r-b:hover{background:var(--a);color:#fff}
+.c-m{margin-top:15px;color:#8b949e;cursor:pointer;font-size:.8rem;text-decoration:underline}
+.o-n{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--p);color:var(--bg);padding:12px 25px;border-radius:30px;font-weight:bold;font-size:.9rem;box-shadow:0 5px 20px rgba(0,255,157,.4);z-index:1000;opacity:0;pointer-events:none;transition:opacity .5s ease-in-out}
+.o-n.s{opacity:1}
+@media(max-width:900px){.g-c{flex-direction:column}.s-s{width:100%;height:55%;border-left:none;border-top:1px solid var(--bd)}.w-s{height:45%;min-width:auto}.m-b{width:180px;height:180px}.m-a{font-size:2.5rem}.c-t{font-size:.75rem}}
+</style>
+</head>
+<body>
+<header><h1>Dev Tycoon</h1><div class="mn-b" onclick="_U.tM()">☰</div></header>
+<div class="g-c">
+<div class="w-s">
+<div class="r-d">
+<div><div class="m-a" id="u_m">0</div><div class="m-l">Total Revenue ($)</div></div>
+<div class="s-g"><div class="s-i"><div class="s-v" id="u_g">0</div><div class="s-n">Auto / Sec</div></div><div class="s-i"><div class="s-v" id="u_c" style="color:var(--s)">1</div><div class="s-n">Click Efficiency</div></div></div>
+</div>
+<div class="m-b" id="c_b"><div class="b-c"><div class="b-i">💻</div><div class="b-t">TOUCH</div></div></div>
+</div>
+<div class="s-s">
+<div class="s-cc">
+<div class="s-c"><div class="c-h"><span class="c-t" style="color:var(--s)">HR RECRUITMENT</span><span class="c-s">Active Income</span></div><div class="c-l" id="u_lc"></div></div>
+<div class="s-c"><div class="c-h"><span class="c-t" style="color:var(--a)">AI R&D</span><span class="c-s">Passive Income</span></div><div class="c-l" id="u_la"></div></div>
+</div>
+</div>
+</div>
+<div class="m-o" id="m_m">
+<div class="m-b">
+<div class="m-t">SETTINGS</div><div class="m-i">Dev Tycoon<br>v4.1.0 (Release)<br><br>데이터는 브라우저에 자동 저장됩니다.</div>
+<div id="r_n"><button class="r-b" onclick="_U.sR()">데이터 초기화 (RESET)</button></div>
+<div id="r_c" style="display:none;flex-direction:column;gap:10px">
+<div style="color:var(--a);font-weight:bold;font-size:.9rem;margin-bottom:5px">모든 진행 상황이 삭제됩니다!<br>정말 초기화하시겠습니까?</div>
+<div style="display:flex;gap:10px"><button class="r-b" style="background:var(--a);color:#fff" onclick="_D.r()">예 (진행)</button><button class="r-b" style="border-color:#8b949e;color:#8b949e;background:transparent" onclick="_U.hR()">아니오</button></div>
+</div>
+<div class="c-m" onclick="_U.tM()">닫기</div>
+</div>
+</div>
+<div id="o_n" class="o-n"></div>
+<script>
+const _C={e:[{id:'e0',n:'인턴',bc:15,bp:1,d:'클릭 +{v}'},{id:'e1',n:'프리랜서',bc:100,bp:5,d:'클릭 +{v}'},{id:'e2',n:'주니어',bc:500,bp:15,d:'클릭 +{v}'},{id:'e3',n:'시니어',bc:3000,bp:50,d:'클릭 +{v}'},{id:'e4',n:'리드 개발자',bc:10000,bp:150,d:'클릭 +{v}'},{id:'e5',n:'아키텍트',bc:50000,bp:500,d:'클릭 +{v}'},{id:'e6',n:'기술 이사',bc:200000,bp:1500,d:'클릭 +{v}'},{id:'e7',n:'CTO',bc:1000000,bp:5000,d:'클릭 +{v}'},{id:'e8',n:'창업자',bc:15000000,bp:25000,d:'클릭 +{v}'},{id:'e9',n:'개발의 신',bc:500000000,bp:200000,d:'클릭 +{v}'}],a:[{id:'a0',n:'스크립트',bc:100,bp:1,d:'초당 +{v}'},{id:'a1',n:'빌드 서버',bc:1000,bp:8,d:'초당 +{v}'},{id:'a2',n:'CS 챗봇',bc:11000,bp:32,d:'초당 +{v}'},{id:'a3',n:'코파일럿',bc:120000,bp:100,d:'초당 +{v}'},{id:'a4',n:'생성 모델',bc:1300000,bp:400,d:'초당 +{v}'},{id:'a5',n:'테스팅 봇',bc:14000000,bp:1500,d:'초당 +{v}'},{id:'a6',n:'클라우드',bc:200000000,bp:6000,d:'초당 +{v}'},{id:'a7',n:'AGI 코어',bc:3300000000,bp:25000,d:'초당 +{v}'},{id:'a8',n:'뉴럴 넷',bc:55000000000,bp:120000,d:'초당 +{v}'},{id:'a9',n:'메타버스',bc:777000000000,bp:1000000,d:'초당 +{v}'}],cs:1.15,ms:20,mm:2,bs:10,bm:2};
+const _S={m:0,c:1,a:0,l:Date.now(),i:{}};
+function _I(){[..._C.e,..._C.a].forEach(x=>{_S.i[x.id]={c:0,t:_C.e.includes(x)?'c':'a',cf:x}})}
+const _D={k:'DT_v1',s(){let o={m:_S.m,l:Date.now(),c:{}};for(let k in _S.i)o.c[k]=_S.i[k].c;try{localStorage.setItem(this.k,JSON.stringify(o))}catch(e){}},l(){let d;try{d=localStorage.getItem(this.k)}catch(e){return!1}if(!d)return!1;try{let p=JSON.parse(d);if(p.m)_S.m=p.m;if(p.c)for(let k in p.c)if(_S.i[k])_S.i[k].c=p.c[k];if(p.l){_L.r();let n=Date.now(),s=(n-p.l)/1000,ms=3600;if(s>ms)s=ms;if(s>0&&_S.a>0){let e=_S.a*s;_S.m+=e;setTimeout(()=>{let o=document.getElementById('o_n');o.innerText=`환영합니다! 부재중 수익: $${_L.f(e)}`;o.classList.add('s');setTimeout(()=>o.classList.remove('s'),3500)},500)}}return!0}catch(e){return!1}},r(){_S.m=0;for(let k in _S.i)_S.i[k].c=0;_S.l=Date.now();_L.r();this.s();_U.u();_U.tM();_U.sT(window.innerWidth/2,window.innerHeight/2,"RESET DONE!")}};
+const _L={f(n){if(n>=1e12)return(n/1e12).toFixed(2)+'T';if(n>=1e9)return(n/1e9).toFixed(2)+'B';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(2)+'k';return Math.floor(n).toLocaleString()},gC(id){let i=_S.i[id],c=i.c,v=i.cf.bc*Math.pow(_C.cs,c),m=Math.pow(_C.mm,Math.floor(c/_C.ms));return Math.floor(v*m)},gM(c){return Math.pow(_C.bm,Math.floor(c/_C.bs))},gU(id){let i=_S.i[id];return i.cf.bp*this.gM(i.c)},r(){let c=1,a=0;for(let k in _S.i){let p=this.gU(k)*_S.i[k].c;if(_S.i[k].t==='c')c+=p;else a+=p}_S.c=c;_S.a=a},b(id){let c=this.gC(id);if(_S.m>=c){_S.m-=c;_S.i[id].c++;this.r();_D.s();return!0}return!1},cW(){_S.m+=_S.c;return _S.c},pA(d){if(_S.a>0)_S.m+=_S.a*d}};
+const _U={e:{m:document.getElementById('u_m'),g:document.getElementById('u_g'),c:document.getElementById('u_c'),lc:document.getElementById('u_lc'),la:document.getElementById('u_la'),b:document.getElementById('c_b'),md:document.getElementById('m_m'),rn:document.getElementById('r_n'),rc:document.getElementById('r_c')},cC(c,t){let e=document.createElement('div');e.className='i-c';e.id=`c-${c.id}`;e.onclick=()=>{if(_L.b(c.id))this.u()};e.innerHTML=`<div class="c-tp"><div class="i-n">${c.n} <span id="bd-${c.id}" style="font-size:0.7em;color:var(--p);display:none">BONUS</span></div><div class="i-cn" id="cn-${c.id}">0</div></div><div class="c-tp"><div class="i-d" id="ds-${c.id}">...</div><div class="i-cs" id="ct-${c.id}">0</div></div>`;t.appendChild(e)},cS(){this.e.lc.innerHTML='';this.e.la.innerHTML='';_C.e.forEach(x=>this.cC(x,this.e.lc));_C.a.forEach(x=>this.cC(x,this.e.la))},u(){this.e.m.innerText=_L.f(_S.m);this.e.g.innerText=_L.f(_S.a);this.e.c.innerText=_L.f(_S.c);for(let k in _S.i){let i=_S.i[k],c=_L.gC(k),e=document.getElementById(`c-${k}`);if(_S.m>=c)e.classList.remove('d');else e.classList.add('d');document.getElementById(`ct-${k}`).innerText=_L.f(c);let cn=document.getElementById(`cn-${k}`);cn.innerText=i.c;if(i.c>0)cn.classList.add('a');else cn.classList.remove('a');document.getElementById(`ds-${k}`).innerText=i.cf.d.replace('{v}',_L.f(_L.gU(k)));let m=_L.gM(i.c),bd=document.getElementById(`bd-${k}`);if(m>1){bd.style.display='inline';bd.innerText=`x${m}`}else bd.style.display='none'}},sT(x,y,t){let e=document.createElement('div');e.className='f-t';if(t==="RESET DONE!"){e.innerText=t;e.style.color="var(--a)"}else{e.innerText=`+$${t}`}e.style.left=`${x}px`;e.style.top=`${y}px`;document.body.appendChild(e);setTimeout(()=>e.remove(),600)},sR(){this.e.rn.style.display='none';this.e.rc.style.display='flex'},hR(){this.e.rn.style.display='block';this.e.rc.style.display='none'},tM(){this.hR();this.e.md.classList.toggle('s')}};
+function _in(){_I();_D.l();_L.r();_U.cS();_U.u();setInterval(()=>{_D.s()},10000);requestAnimationFrame(_lp)}
+function _lp(c){let d=(c-_S.l)/1000;_S.l=c;_L.pA(d);_U.u();requestAnimationFrame(_lp)}
+function _oC(e){let v=_L.cW(),cx,cy;if(e.changedTouches){cx=e.changedTouches[0].clientX;cy=e.changedTouches[0].clientY}else{cx=e.clientX;cy=e.clientY}let r=_U.e.b.getBoundingClientRect(),x=(cx||(r.left+r.width/2))+(Math.random()*40-20),y=(cy||(r.top+r.height/2))-20;_U.sT(x,y,_L.f(v))}
+_U.e.b.addEventListener('mousedown',_oC);_U.e.b.addEventListener('touchstart',e=>{e.preventDefault();_oC(e)},{passive:!1});_in();
+</script>
+</body>
+</html>
