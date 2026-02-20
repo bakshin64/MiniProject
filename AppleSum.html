@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사과 게임 - 무한 보드 버전</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            touch-action: none;
+            user-select: none;
+            background-color: #fdf2f2;
+        }
+        .apple-grid {
+            display: grid;
+            gap: 2px;
+            background-color: #e5e7eb;
+            border: 4px solid #f87171;
+            border-radius: 8px;
+            padding: 4px;
+            position: relative; /* Coordinate reference point */
+            margin: 0 auto;
+            min-height: 300px;
+        }
+        .apple {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+        .apple.selected {
+            background-color: #fee2e2;
+            box-shadow: inset 0 0 0 2px #f87171;
+        }
+        .apple.removed {
+            visibility: hidden;
+            pointer-events: none;
+        }
+        /* Fix selection box to internal coordinate system */
+        .selection-box {
+            position: absolute;
+            border: 2px solid #ef4444;
+            background-color: rgba(239, 68, 68, 0.2);
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+            left: 0;
+            top: 0;
+        }
+        .apple::before {
+            content: '🍎';
+            position: absolute;
+            font-size: 1.2rem;
+            opacity: 0.2;
+        }
+        .apple span {
+            position: relative;
+            z-index: 1;
+        }
+        .option-btn {
+            transition: all 0.2s;
+            border: 2px solid #e5e7eb;
+        }
+        .option-btn.active {
+            border-color: #ef4444;
+            background-color: #fee2e2;
+            color: #ef4444;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 pt-8">
+
+    <!-- Top UI -->
+    <div class="max-w-[600px] w-full mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-md border-b-4 border-red-400">
+        <div class="flex-1">
+            <h1 class="text-2xl font-black text-red-600 leading-tight">사과 게임</h1>
+            <p id="game-info-display" class="text-xs text-gray-500 font-bold">설정을 선택해주세요</p>
+        </div>
+        <div class="flex gap-4 text-center">
+            <div class="bg-red-50 px-3 py-1 rounded-lg">
+                <p class="text-[10px] text-red-400 uppercase font-black">Score</p>
+                <p id="score-display" class="text-2xl font-black text-red-500">0</p>
+            </div>
+            <div class="bg-gray-50 px-3 py-1 rounded-lg">
+                <p class="text-[10px] text-gray-400 uppercase font-black">Time</p>
+                <p id="timer-display" class="text-2xl font-black text-gray-700">60</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="game-container" class="relative w-full max-w-[600px] flex flex-col items-center">
+        
+        <!-- Apple Board -->
+        <div id="apple-board" class="apple-grid shadow-2xl w-full">
+            <div id="selection-box" class="selection-box"></div>
+        </div>
+        
+        <!-- Start Menu Overlay -->
+        <div id="start-overlay" class="absolute inset-0 z-[150] flex items-center justify-center p-4 bg-white/80 backdrop-blur-sm rounded-xl">
+            <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-2xl border-2 border-red-100 flex flex-col items-center">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-black text-red-600 mb-1 italic">APPLE GAME</h2>
+                    <div class="h-1 w-12 bg-red-400 mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="w-full space-y-6">
+                    <div>
+                        <p class="text-[11px] font-black text-gray-400 mb-2 uppercase tracking-widest text-center">STEP 1. 그리드 크기</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setGrid(20, 10, this)" class="option-btn py-3 rounded-xl font-bold text-gray-600 bg-white">10×20</button>
+                            <button onclick="setGrid(15, 15, this)" class="option-btn py-3 rounded-xl font-bold text-gray-600 bg-white">15×15</button>
+                            <button onclick="setGrid(20, 20, this)" class="option-btn py-3 rounded-xl font-bold text-gray-600 bg-white active">20×20</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[11px] font-black text-gray-400 mb-2 uppercase tracking-widest text-center">STEP 2. 목표 숫자</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setTarget(10, this)" class="option-btn py-3 rounded-xl font-bold text-gray-600 bg-white active">합 10</button>
+                            <button onclick="setTarget(15, this)" class="option-btn py-3 rounded-xl font-bold text-gray-600 bg-white">합 15</button>
+                            <button onclick="setTarget(20, this)" class="option-btn py-3 rounded-xl font-bold text-gray-600 bg-white">합 20</button>
+                        </div>
+                    </div>
+
+                    <button id="start-game-btn" onclick="confirmStart()" class="w-full py-5 bg-red-500 hover:bg-red-600 text-white text-xl font-black rounded-2xl shadow-lg transition-all active:scale-95 border-b-4 border-red-700 mt-4">
+                        START GAME
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- End Menu Overlay -->
+        <div id="end-overlay" class="absolute inset-0 z-[200] hidden flex items-center justify-center p-4 bg-red-500/10 backdrop-blur-md rounded-xl">
+            <div class="text-center p-10 bg-white rounded-[40px] shadow-2xl border-4 border-red-400 w-full max-w-sm">
+                <p class="text-sm font-black text-red-400 mb-2 tracking-widest">GAME OVER</p>
+                <h2 id="final-config-name" class="text-xs font-bold text-gray-400 mb-6 bg-gray-100 py-1 px-3 rounded-full inline-block">20x20 | 합 10</h2>
+                <div class="mb-8">
+                    <p class="text-gray-400 font-bold text-sm mb-1">YOUR SCORE</p>
+                    <div class="text-8xl font-black text-red-600 tabular-nums" id="final-score">0</div>
+                </div>
+                <div class="space-y-4">
+                    <button onclick="resetToMenu()" class="w-full py-4 bg-red-500 text-white text-lg font-black rounded-2xl shadow-lg hover:bg-red-600 transition-transform active:scale-95 border-b-4 border-red-800">
+                        REPLAY
+                    </button>
+                    <p class="text-xs text-gray-400 font-medium">스크린샷으로 점수를 인증하세요!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="mt-8">
+        <button id="shuffle-btn" class="px-8 py-3 bg-white border-2 border-gray-200 text-gray-500 font-black rounded-2xl text-sm shadow-sm hover:border-red-300 hover:text-red-400 transition-colors active:bg-red-50">
+            사과 위치 재배열
+        </button>
+    </div>
+
+    <script>
+        let ROWS = 20; 
+        let COLS = 20; 
+        let targetSum = 10;
+        const TOTAL_TIME = 60; 
+
+        let score = 0;
+        let timeLeft = TOTAL_TIME;
+        let timerId = null;
+        let isGameActive = false;
+        let apples = []; 
+
+        let isDragging = false;
+        let startPos = { x: 0, y: 0 };
+        let currentPos = { x: 0, y: 0 };
+
+        const board = document.getElementById('apple-board');
+        const selectionBox = document.getElementById('selection-box');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerDisplay = document.getElementById('timer-display');
+        const startOverlay = document.getElementById('start-overlay');
+        const endOverlay = document.getElementById('end-overlay');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const gameInfoDisplay = document.getElementById('game-info-display');
+        const finalConfigName = document.getElementById('final-config-name');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+
+        function setGrid(r, c, btn) {
+            ROWS = r;
+            COLS = c;
+            btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function setTarget(t, btn) {
+            targetSum = t;
+            btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function resetToMenu() {
+            isGameActive = false;
+            if (timerId) clearInterval(timerId);
+            endOverlay.classList.add('hidden');
+            startOverlay.classList.remove('hidden');
+            score = 0;
+            scoreDisplay.innerText = "0";
+            timeLeft = TOTAL_TIME;
+            timerDisplay.innerText = TOTAL_TIME;
+            gameInfoDisplay.innerText = "설정을 선택해주세요";
+            initBoard();
+        }
+
+        function initBoard() {
+            const box = document.getElementById('selection-box');
+            board.innerHTML = '';
+            board.appendChild(box); 
+            
+            board.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+            apples = [];
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const val = Math.floor(Math.random() * 9) + 1;
+                    const appleEl = document.createElement('div');
+                    appleEl.className = 'apple';
+                    appleEl.dataset.row = r;
+                    appleEl.dataset.col = c;
+                    appleEl.innerHTML = `<span>${val}</span>`;
+                    
+                    apples.push({
+                        element: appleEl,
+                        value: val,
+                        removed: false,
+                        row: r,
+                        col: c
+                    });
+                    
+                    board.appendChild(appleEl);
+                }
+            }
+            
+            const containerMaxHeight = window.innerHeight * 0.6;
+            const containerMaxWidth = Math.min(window.innerWidth - 40, 600);
+            const ratio = COLS / ROWS;
+            let width = containerMaxWidth;
+            let height = width / ratio;
+
+            if (height > containerMaxHeight) {
+                height = containerMaxHeight;
+                width = height * ratio;
+            }
+
+            board.style.width = `${width}px`;
+            board.style.minHeight = `${height}px`;
+            
+            const fontSize = Math.max(0.4, 12 / Math.max(ROWS, COLS)) + 'rem';
+            document.querySelectorAll('.apple').forEach(el => {
+                el.style.fontSize = fontSize;
+            });
+        }
+
+        function confirmStart() {
+            gameInfoDisplay.innerText = `${COLS}x${ROWS} 그리드 | 합 ${targetSum} 만들기`;
+            finalConfigName.innerText = `${COLS}x${ROWS} 그리드 | 합 ${targetSum}`;
+            
+            score = 0;
+            timeLeft = TOTAL_TIME;
+            scoreDisplay.innerText = score;
+            timerDisplay.innerText = timeLeft;
+            isGameActive = true;
+            
+            startOverlay.classList.add('hidden');
+            endOverlay.classList.add('hidden');
+            
+            initBoard();
+            startTimer();
+            checkAndShuffleIfNeeded();
+        }
+
+        function startTimer() {
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function endGame() {
+            isGameActive = false;
+            clearInterval(timerId);
+            finalScoreDisplay.innerText = score;
+            endOverlay.classList.remove('hidden');
+        }
+
+        function handleMouseDown(e) {
+            if (!isGameActive) return;
+            isDragging = true;
+            const rect = board.getBoundingClientRect();
+            const clientX = (e.clientX !== undefined) ? e.clientX : e.touches[0].clientX;
+            const clientY = (e.clientY !== undefined) ? e.clientY : e.touches[0].clientY;
+            startPos = { x: clientX - rect.left, y: clientY - rect.top };
+            currentPos = { ...startPos };
+            updateSelectionBox();
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging || !isGameActive) return;
+            const rect = board.getBoundingClientRect();
+            const clientX = (e.clientX !== undefined) ? e.clientX : e.touches[0].clientX;
+            const clientY = (e.clientY !== undefined) ? e.clientY : e.touches[0].clientY;
+            currentPos = { x: clientX - rect.left, y: clientY - rect.top };
+            updateSelectionBox();
+            highlightApples();
+        }
+
+        function handleMouseUp() {
+            if (!isDragging || !isGameActive) return;
+            isDragging = false;
+            selectionBox.style.display = 'none';
+            processSelection();
+            clearHighlights();
+        }
+
+        function updateSelectionBox() {
+            const left = Math.min(startPos.x, currentPos.x);
+            const top = Math.min(startPos.y, currentPos.y);
+            const width = Math.abs(startPos.x - currentPos.x);
+            const height = Math.abs(startPos.y - currentPos.y);
+            selectionBox.style.display = 'block';
+            selectionBox.style.left = left + 'px';
+            selectionBox.style.top = top + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+        }
+
+        function getSelectedApples() {
+            const left = Math.min(startPos.x, currentPos.x);
+            const right = Math.max(startPos.x, currentPos.x);
+            const top = Math.min(startPos.y, currentPos.y);
+            const bottom = Math.max(startPos.y, currentPos.y);
+            const boardRect = board.getBoundingClientRect();
+            return apples.filter(apple => {
+                if (apple.removed) return false;
+                const rect = apple.element.getBoundingClientRect();
+                const appleLeft = rect.left - boardRect.left;
+                const appleRight = rect.right - boardRect.left;
+                const appleTop = rect.top - boardRect.top;
+                const appleBottom = rect.bottom - boardRect.top;
+                const midX = (appleLeft + appleRight) / 2;
+                const midY = (appleTop + appleBottom) / 2;
+                return midX >= left && midX <= right && midY >= top && midY <= bottom;
+            });
+        }
+
+        function highlightApples() {
+            clearHighlights();
+            getSelectedApples().forEach(a => a.element.classList.add('selected'));
+        }
+
+        function clearHighlights() {
+            apples.forEach(a => a.element.classList.remove('selected'));
+        }
+
+        function processSelection() {
+            const selected = getSelectedApples();
+            if (selected.length === 0) return;
+            const sum = selected.reduce((acc, curr) => acc + curr.value, 0);
+            if (sum === targetSum) {
+                selected.forEach(a => {
+                    a.removed = true;
+                    a.element.classList.add('removed');
+                });
+                score += selected.length;
+                scoreDisplay.innerText = score;
+
+                // Check if board is completely cleared
+                const remainingApples = apples.filter(a => !a.removed);
+                if (remainingApples.length === 0) {
+                    // Regenerate board immediately if all cleared
+                    setTimeout(() => {
+                        initBoard();
+                        checkAndShuffleIfNeeded();
+                    }, 300);
+                } else {
+                    setTimeout(checkAndShuffleIfNeeded, 300);
+                }
+            }
+        }
+
+        function shuffleApples() {
+            const activeApples = apples.filter(a => !a.removed);
+            if (activeApples.length === 0) return;
+            const activeValues = activeApples.map(a => a.value);
+            for (let i = activeValues.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [activeValues[i], activeValues[j]] = [activeValues[j], activeValues[i]];
+            }
+            activeApples.forEach((apple, index) => {
+                apple.value = activeValues[index];
+                apple.element.querySelector('span').innerText = apple.value;
+            });
+            checkAndShuffleIfNeeded();
+        }
+
+        function hasPossibleMove() {
+            for (let r1 = 0; r1 < ROWS; r1++) {
+                for (let c1 = 0; c1 < COLS; c1++) {
+                    if (isAppleRemoved(r1, c1)) continue;
+                    for (let r2 = r1; r2 < ROWS; r2++) {
+                        for (let c2 = c1; c2 < COLS; c2++) {
+                            let currentSum = 0;
+                            let hasActiveApple = false;
+                            for (let r = r1; r <= r2; r++) {
+                                for (let c = c1; c <= c2; c++) {
+                                    const apple = getApple(r, c);
+                                    if (apple && !apple.removed) {
+                                        currentSum += apple.value;
+                                        hasActiveApple = true;
+                                    }
+                                }
+                            }
+                            if (currentSum === targetSum && hasActiveApple) return true;
+                            if (currentSum > targetSum) break; 
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function getApple(r, c) { return apples[r * COLS + c]; }
+        function isAppleRemoved(r, c) { const a = getApple(r, c); return !a || a.removed; }
+        function checkAndShuffleIfNeeded() {
+            if (!isGameActive) return;
+            if (!hasPossibleMove()) {
+                const activeOnes = apples.filter(a => !a.removed);
+                if (activeOnes.length > 0) shuffleApples();
+            }
+        }
+
+        shuffleBtn.addEventListener('click', () => { if (isGameActive) shuffleApples(); });
+        board.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        board.addEventListener('touchstart', (e) => { handleMouseDown(e); if (e.cancelable) e.preventDefault(); }, { passive: false });
+        window.addEventListener('touchmove', (e) => { handleMouseMove(e); if (e.cancelable) e.preventDefault(); }, { passive: false });
+        window.addEventListener('touchend', handleMouseUp);
+
+        initBoard();
+    </script>
+</body>
+</html>
